@@ -2,7 +2,7 @@
 
 ## Giraffe Illustration
 
-```
+```text
                                       ._ o o
                                       \_`-)|_
                                    ,""       \
