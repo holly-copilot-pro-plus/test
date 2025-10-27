@@ -58,6 +58,11 @@ class JSONCSVConverter:
         if not data:
             raise ValueError("JSON data is empty")
         
+        # Validate all items are dictionaries
+        for idx, item in enumerate(data):
+            if not isinstance(item, dict):
+                raise ValueError(f"Item at index {idx} is not a dictionary object")
+        
         # Flatten nested structures if enabled
         if self.flatten_nested:
             data = [self._flatten_dict(item) for item in data]
@@ -143,16 +148,22 @@ class JSONCSVConverter:
             for part in parts[:-1]:
                 if part not in current:
                     current[part] = {}
-                current = current[part]
-            
-            # Try to parse JSON strings back to lists/objects
-            if isinstance(value, str) and value.startswith('['):
-                try:
-                    value = json.loads(value)
-                except json.JSONDecodeError:
-                    pass
-            
-            current[parts[-1]] = value
+                elif not isinstance(current[part], dict):
+                    # If the current value is not a dict, we can't continue unflattening
+                    # Keep the original dotted key instead
+                    result[key] = value
+                    break
+                else:
+                    current = current[part]
+            else:
+                # Try to parse JSON strings back to lists/objects
+                if isinstance(value, str) and value.startswith('['):
+                    try:
+                        value = json.loads(value)
+                    except json.JSONDecodeError:
+                        pass
+                
+                current[parts[-1]] = value
         return result
 
 
